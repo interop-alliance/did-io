@@ -1,7 +1,10 @@
 /*!
  * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
  */
-import {VERIFICATION_RELATIONSHIPS} from './constants.js';
+import { VERIFICATION_RELATIONSHIPS } from './constants.js'
+import { IDID, IDidDocument, IKeyIdOrObject, IKeyPair } from '@digitalcredentials/ssi'
+
+export type IKeyMap = Record<string, IKeyPair>
 
 /**
  * Tests whether this DID Document contains a verification relationship
@@ -25,19 +28,22 @@ import {VERIFICATION_RELATIONSHIPS} from './constants.js';
  *
  * @returns {boolean} Returns whether a method id is authorized for purpose.
  */
-export function approvesMethodFor({doc, methodId, purpose}) {
-  if(!(methodId && purpose)) {
-    throw new Error('A method id and purpose is required.');
+export function approvesMethodFor (
+  { doc, methodId, purpose }: { doc: IDidDocument, methodId: string, purpose: string }): boolean {
+  if (!(methodId && purpose)) {
+    throw new Error('A method id and purpose is required.')
   }
-  const method = _methodById({doc, methodId});
-  if(!method) {
-    return false;
+  const method = _methodById({ doc, methodId })
+  if (!method) {
+    return false
   }
-  const methods = doc[purpose] || [];
+  // @ts-expect-error
+  const methods: IKeyIdOrObject[] = doc[purpose] || []
+
   return !!methods.find(method => {
     return (typeof method === 'string' && method === methodId) ||
-      (typeof method === 'object' && method.id === methodId);
-  });
+      (typeof method === 'object' && method.id === methodId)
+  })
 }
 
 /**
@@ -65,38 +71,40 @@ export function approvesMethodFor({doc, methodId, purpose}) {
  * @returns {Promise<{keyPairs: object}>} A hashmap of public/private key
  *   pairs, by key id.
  */
-export async function initKeys({doc, cryptoLd, keyMap = {}} = {}) {
-  if(!doc.id) {
+export async function initKeys (
+  { doc, cryptoLd, keyMap = {} }: { doc: IDidDocument, cryptoLd: any, keyMap?: IKeyMap }): Promise<{ keyPairs: IKeyMap }> {
+  if (!doc.id) {
     throw new TypeError(
-      'DID Document "id" property is required to initialize keys.');
+      'DID Document "id" property is required to initialize keys.')
   }
 
-  const keyPairs = {};
+  const keyPairs: IKeyMap = {}
 
   // Set the defaults for the created keys (if needed)
-  const options = {controller: doc.id};
+  const options = { controller: doc.id }
 
-  for(const purpose in keyMap) {
-    if(!VERIFICATION_RELATIONSHIPS.has(purpose)) {
-      throw new Error(`Unsupported key purpose: "${purpose}".`);
+  for (const purpose in keyMap) {
+    if (!VERIFICATION_RELATIONSHIPS.has(purpose)) {
+      throw new Error(`Unsupported key purpose: "${purpose}".`)
     }
 
-    let key;
-    if(typeof keyMap[purpose] === 'string') {
-      if(!cryptoLd) {
-        throw new Error('Please provide an initialized CryptoLD instance.');
+    let key
+    if (typeof keyMap[purpose] === 'string') {
+      if (!cryptoLd) {
+        throw new Error('Please provide an initialized CryptoLD instance.')
       }
-      key = await cryptoLd.generate({type: keyMap[purpose], ...options});
+      key = await cryptoLd.generate({ type: keyMap[purpose], ...options })
     } else {
       // An existing key has been provided
-      key = keyMap[purpose];
+      key = keyMap[purpose]
     }
 
-    this[purpose] = [key.export({publicKey: true})];
-    keyPairs[key.id] = key;
+    // TODO: why was 'this' used here?
+    // this[purpose] = [key.export({ publicKey: true })]
+    keyPairs[key.id] = key
   }
 
-  return {keyPairs};
+  return { keyPairs }
 }
 
 /**
@@ -138,26 +146,28 @@ export async function initKeys({doc, cryptoLd, keyMap = {}} = {}) {
  *
  * @returns {object} Returns the verification method, or undefined if not found.
  */
-export function findVerificationMethod({doc, methodId, purpose} = {}) {
-  if(!doc) {
-    throw new TypeError('A DID Document is required.');
+export function findVerificationMethod (
+  { doc, methodId, purpose }: { doc: IDidDocument, methodId: string, purpose: string }): IKeyIdOrObject | undefined {
+  if (!doc) {
+    throw new TypeError('A DID Document is required.')
   }
-  if(!(methodId || purpose)) {
-    throw new TypeError('A method id or purpose is required.');
+  if (!(methodId || purpose)) {
+    throw new TypeError('A method id or purpose is required.')
   }
 
-  if(methodId) {
-    return _methodById({doc, methodId});
+  if (methodId) {
+    return _methodById({ doc, methodId })
   }
 
   // Id not given, find the first method by purpose
-  const [method] = doc[purpose] || [];
-  if(method && typeof method === 'string') {
+  // @ts-expect-error
+  const [method] = doc[purpose] || []
+  if (method && typeof method === 'string') {
     // This is a reference, not the full method, attempt to find it
-    return _methodById({doc, methodId: method});
+    return _methodById({ doc, methodId: method })
   }
 
-  return method;
+  return method
 }
 
 /**
@@ -169,26 +179,39 @@ export function findVerificationMethod({doc, methodId, purpose} = {}) {
  *
  * @returns {object} Returns the verification method.
  */
-export function _methodById({doc, methodId}) {
-  let result;
+export function _methodById (
+  { doc, methodId }: { doc: IDidDocument, methodId: string }
+): IKeyIdOrObject | undefined {
+  let result
 
   // First, check the 'verificationMethod' bucket, see if it's listed there
-  if(doc.verificationMethod) {
-    result = doc.verificationMethod.find(method => method.id === methodId);
+  let unlistedPurposeMethods: IKeyIdOrObject[] | undefined
+  if (doc.verificationMethod) {
+    unlistedPurposeMethods = Array.isArray(doc.verificationMethod)
+      ? doc.verificationMethod
+      : [doc.verificationMethod]
+    result = unlistedPurposeMethods.find((method: IKeyIdOrObject) => {
+      return (typeof method === 'string' && method === methodId) ||
+        (typeof method === 'object' && method.id === methodId)
+    })
+    if (result) {
+      return result
+    }
   }
 
-  for(const purpose of VERIFICATION_RELATIONSHIPS) {
-    const methods = doc[purpose] || [];
+  for (const purpose of VERIFICATION_RELATIONSHIPS) {
+    // @ts-expect-error
+    const methods = doc[purpose] || []
     // Iterate through each verification method in 'authentication', etc.
-    for(const method of methods) {
+    for (const method of methods) {
       // Only return it if the method is defined, not referenced
-      if(typeof method === 'object' && method.id === methodId) {
-        result = method;
-        break;
+      if (typeof method === 'object' && method.id === methodId) {
+        result = method
+        break
       }
     }
-    if(result) {
-      return result;
+    if (result) {
+      return result
     }
   }
 }
@@ -204,12 +227,12 @@ export function _methodById({doc, methodId}) {
  *
  * @returns {{prefix: string}} Returns the method prefix (without `did:`).
  */
-export function parseDid({did}) {
-  if(!did) {
-    throw new TypeError('DID cannot be empty.');
+export function parseDid ({ did }: { did: IDID | string }): { prefix: string } {
+  if (!did) {
+    throw new TypeError('DID cannot be empty.')
   }
 
-  const prefix = did.split(':').slice(1, 2).join(':');
+  const prefix = did.split(':').slice(1, 2).join(':')
 
-  return {prefix};
+  return { prefix }
 }

@@ -1,5 +1,10 @@
 # did-io ChangeLog
 
+## 2.0.0 -
+
+### Changed
+- **BREAKING**: Convert to Typescript.
+
 ## 1.0.1 - 2021-10-01
 
 ### Changed
