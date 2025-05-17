@@ -16,4 +16,4 @@ export const VERIFICATION_RELATIONSHIPS = new Set([
   'capabilityDelegation',
   'capabilityInvocation',
   'keyAgreement'
-]);
+])

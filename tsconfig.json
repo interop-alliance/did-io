@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2022",
+    "lib": ["es2020"],
+    "module": "es6",
+    "moduleResolution": "node",
+    "declarationMap": true,
+    "declaration": true,
+    "outDir": "dist",
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "checkJs": true,
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": ["test", "node_modules", "dist", ".eslintrc.cjs"]
+}
