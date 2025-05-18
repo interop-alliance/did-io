@@ -22,7 +22,7 @@
     }
   },
   "dependencies": {
-    "@digitalcredentials/lru-memoize": "^2.1.4",
+    "@digitalcredentials/lru-memoize": "^3.0.0-beta.1",
     "@digitalcredentials/ssi": "^3.0.5"
   },
   "devDependencies": {
