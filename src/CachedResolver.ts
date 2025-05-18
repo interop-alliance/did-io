@@ -11,7 +11,7 @@ export interface DidGenerationResult {
   methodFor: ({ purpose }: { purpose: string }) => IKeyPair
 }
 
-export interface DidKeyDriver {
+export interface DidMethodDriver {
   computeId: (
     { keyPair }: { keyPair: IKeyPair }
   ) => Promise<IDID>
@@ -92,10 +92,10 @@ export class CachedResolver {
   /**
    * @param {string} did - DID uri.
    *
-   * @returns {DidKeyDriver} - DID Method driver.
+   * @returns {DidMethodDriver} - DID Method driver.
    * @private
    */
-  _methodForDid (did: IDID | string): DidKeyDriver {
+  _methodForDid (did: IDID | string): DidMethodDriver {
     const { prefix } = parseDid({ did })
     const method = this._methods.get(prefix)
     if (!method) {
