@@ -214,5 +214,5 @@ If editing the Readme, please conform to the
 
 ## License
 
-* MIT License - DCC - TypeScript compatibility.
+* [MIT LICENSE](LICENSE.md) (c) 2026 Interop Alliance - TypeScript compatibility.
 * New BSD License (3-clause) © 2020-2021 Digital Bazaar - Initial implementation.
