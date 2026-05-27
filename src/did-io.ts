@@ -2,9 +2,20 @@
  * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
  */
 import { VERIFICATION_RELATIONSHIPS } from './constants.js'
-import { IDID, IDidDocument, IKeyIdOrObject, IKeyPair } from '@digitalcredentials/ssi'
+import type {
+  IDID,
+  IDidDocument,
+  IKeyIdOrObject,
+  IKeyPair
+} from '@digitalcredentials/ssi'
 
 export type IKeyMap = Record<string, IKeyPair>
+
+/**
+ * Map of keys (or key type names) by verification relationship, used as input
+ * when initializing a DID Document's keys.
+ */
+export type IKeyMapInput = Record<string, IKeyPair | string>
 
 /**
  * Tests whether this DID Document contains a verification relationship
@@ -37,10 +48,9 @@ export function approvesMethodFor (
   if (!method) {
     return false
   }
-  // @ts-expect-error
-  const methods: IKeyIdOrObject[] = doc[purpose] || []
+  const methods = _methodsForPurpose({ doc, purpose })
 
-  return !!methods.find(method => {
+  return methods.some(method => {
     return (typeof method === 'string' && method === methodId) ||
       (typeof method === 'object' && method.id === methodId)
   })
@@ -72,7 +82,9 @@ export function approvesMethodFor (
  *   pairs, by key id.
  */
 export async function initKeys (
-  { doc, cryptoLd, keyMap = {} }: { doc: IDidDocument, cryptoLd: any, keyMap?: IKeyMap }): Promise<{ keyPairs: IKeyMap }> {
+  { doc, cryptoLd, keyMap = {} }:
+  { doc: IDidDocument, cryptoLd?: any, keyMap?: IKeyMapInput }
+): Promise<{ keyPairs: IKeyMap }> {
   if (!doc.id) {
     throw new TypeError(
       'DID Document "id" property is required to initialize keys.')
@@ -88,19 +100,21 @@ export async function initKeys (
       throw new Error(`Unsupported key purpose: "${purpose}".`)
     }
 
-    let key
-    if (typeof keyMap[purpose] === 'string') {
+    const entry = keyMap[purpose]
+    let key: IKeyPair
+    if (typeof entry === 'string') {
       if (!cryptoLd) {
         throw new Error('Please provide an initialized CryptoLD instance.')
       }
-      key = await cryptoLd.generate({ type: keyMap[purpose], ...options })
+      key = await cryptoLd.generate({ type: entry, ...options })
     } else {
       // An existing key has been provided
-      key = keyMap[purpose]
+      key = entry as IKeyPair
     }
 
-    // TODO: why was 'this' used here?
-    // this[purpose] = [key.export({ publicKey: true })]
+    if (!key.id) {
+      throw new Error('Initialized key is missing an "id" property.')
+    }
     keyPairs[key.id] = key
   }
 
@@ -147,11 +161,13 @@ export async function initKeys (
  * @returns {object} Returns the verification method, or undefined if not found.
  */
 export function findVerificationMethod (
-  { doc, methodId, purpose }: { doc: IDidDocument, methodId: string, purpose: string }): IKeyIdOrObject | undefined {
+  { doc, methodId, purpose }:
+  { doc: IDidDocument, methodId?: string, purpose?: string }
+): IKeyIdOrObject | undefined {
   if (!doc) {
     throw new TypeError('A DID Document is required.')
   }
-  if (!(methodId || purpose)) {
+  if (!(methodId ?? purpose)) {
     throw new TypeError('A method id or purpose is required.')
   }
 
@@ -160,8 +176,7 @@ export function findVerificationMethod (
   }
 
   // Id not given, find the first method by purpose
-  // @ts-expect-error
-  const [method] = doc[purpose] || []
+  const [method] = _methodsForPurpose({ doc, purpose })
   if (method && typeof method === 'string') {
     // This is a reference, not the full method, attempt to find it
     return _methodById({ doc, methodId: method })
@@ -200,8 +215,7 @@ export function _methodById (
   }
 
   for (const purpose of VERIFICATION_RELATIONSHIPS) {
-    // @ts-expect-error
-    const methods = doc[purpose] || []
+    const methods = _methodsForPurpose({ doc, purpose })
     // Iterate through each verification method in 'authentication', etc.
     for (const method of methods) {
       // Only return it if the method is defined, not referenced
@@ -217,7 +231,33 @@ export function _methodById (
 }
 
 /**
- * Parses the DID into various component (currently, only cares about prefix).
+ * Reads a DID Document's verification relationship (by purpose) and normalizes
+ * it to an array of verification methods (key ids or key objects). The DID Core
+ * data model allows each relationship to be either a single value or an array.
+ *
+ * @param {object} options - Options hashmap.
+ * @param {object} options.doc - DID Document.
+ * @param {string} [options.purpose] - Verification relationship (e.g.
+ *   'authentication').
+ *
+ * @returns {IKeyIdOrObject[]} The methods for that purpose (empty if none).
+ */
+function _methodsForPurpose (
+  { doc, purpose }: { doc: IDidDocument, purpose?: string }
+): IKeyIdOrObject[] {
+  if (!purpose) {
+    return []
+  }
+  const value = (doc as unknown as
+    Record<string, IKeyIdOrObject | IKeyIdOrObject[] | undefined>)[purpose]
+  if (value == null) {
+    return []
+  }
+  return Array.isArray(value) ? value : [value]
+}
+
+/**
+ * Parses the DID into various components (currently, only cares about prefix).
  *
  * @example
  * parseDid({did: 'did:v1:test:nym'});

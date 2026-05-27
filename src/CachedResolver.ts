@@ -1,9 +1,15 @@
 /*!
  * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
  */
-import { parseDid, IKeyMap } from './did-io.js'
-import { LruCache } from '@digitalcredentials/lru-memoize'
-import { IDID, IDidDocument, IKeyPair, IPublicKey } from '@digitalcredentials/ssi'
+import { parseDid } from './did-io.js'
+import type { IKeyMap } from './did-io.js'
+import { LruCache } from '@interop/lru-memoize'
+import type {
+  IDID,
+  IDidDocument,
+  IKeyPair,
+  IPublicKey
+} from '@digitalcredentials/ssi'
 
 export interface DidGenerationResult {
   didDocument: IDidDocument
@@ -12,6 +18,8 @@ export interface DidGenerationResult {
 }
 
 export interface DidMethodDriver {
+  method: string
+
   computeId: (
     { keyPair }: { keyPair: IKeyPair }
   ) => Promise<IDID>
@@ -21,9 +29,13 @@ export interface DidMethodDriver {
     { verificationKeyPair?: IKeyPair, keyAgreementKeyPair?: IKeyPair }
   ) => DidGenerationResult
 
+  generate: (
+    options?: { [key: string]: unknown }
+  ) => Promise<DidGenerationResult>
+
   get: (
-    { did, url }: { did?: IDID, url?: string }
-  ) => IDidDocument | IPublicKey
+    options: { did?: IDID | string, url?: string, [key: string]: unknown }
+  ) => Promise<IDidDocument | IPublicKey>
 
   publicKeyToDidDoc: (
     { publicKeyDescription }: { publicKeyDescription: IKeyPair | IPublicKey }
@@ -34,30 +46,44 @@ export interface DidMethodDriver {
   ) => IPublicKey
 }
 
+export interface CachedResolverOptions {
+  max?: number
+  ttl?: number
+  updateAgeOnGet?: boolean
+  cache?: { memoize: LruCache['memoize'] }
+  [key: string]: unknown
+}
+
 export class CachedResolver {
-  _cache
-  _methods
+  _cache: { memoize: LruCache['memoize'] }
+  _methods: Map<string, DidMethodDriver>
   /**
    * @param {object} [options={}] - Options hashmap.
    * @param {number} [options.max=100] - Max number of items in the cache.
-   * @param {number} [options.maxAge=5000] - Max age of a cache item, in ms.
+   * @param {number} [options.ttl=5000] - Max age of a cache item, in ms.
    * @param {boolean} [options.updateAgeOnGet=false] - When using time-expiring
-   *   entries with `maxAge`, setting this to true will make each entry's
+   *   entries with `ttl`, setting this to true will make each entry's
    *   effective time update to the current time whenever it is retrieved from
    *   cache, thereby extending the expiration date of the entry.
+   * @param {object} [options.cache] - A custom cache instance to use instead of
+   *   creating a default `LruCache`. Must implement `memoize({ key, fn })`.
+   *   Useful when the app already has an `LruCache` configured with custom
+   *   settings, or uses a different compatible cache implementation.
    * @param {object} [options.cacheOptions] - Additional `lru-cache` options.
    */
   constructor ({
-    max = 100, maxAge = 5000, updateAgeOnGet = false,
+    max = 100, ttl = 5000, updateAgeOnGet = false, cache,
     ...cacheOptions
-  } = {}) {
-    this._cache = new LruCache({ max, maxAge, updateAgeOnGet, ...cacheOptions })
+  }: CachedResolverOptions = {}) {
+    this._cache = cache ?? new LruCache(
+      { max, ttl, updateAgeOnGet, ...cacheOptions } as
+        ConstructorParameters<typeof LruCache>[0]
+    )
     this._methods = new Map()
   }
 
-  use (driver: any): void {
-    const methodName = driver.method
-    this._methods.set(methodName, driver)
+  use (driver: DidMethodDriver): void {
+    this._methods.set(driver.method, driver)
   }
 
   /**
@@ -75,18 +101,41 @@ export class CachedResolver {
    * @returns {Promise<IDidDocument|IPublicKey>} Resolves with fetched DID
    *   Document or public key node.
    */
-  async get ({ did, url, ...getOptions }: { did: IDID, url: string }): Promise<IDidDocument | IPublicKey> {
-    did = did || url
-    if (!did) {
+  async get (
+    { did, url, ...getOptions }:
+    { did?: IDID | string, url?: string, [key: string]: unknown }
+  ): Promise<IDidDocument | IPublicKey> {
+    const didOrUrl = did ?? url
+    if (!didOrUrl) {
       throw new TypeError('A string "did" or "url" parameter is required.')
     }
 
-    const method = this._methodForDid(did)
+    const method = this._methodForDid(didOrUrl)
 
-    return this._cache.memoize({
-      key: did,
-      fn: () => method.get({ did, ...getOptions })
+    return this._cache.memoize<IDidDocument | IPublicKey>({
+      key: didOrUrl,
+      fn: async () => await method.get({ did: didOrUrl, ...getOptions })
     })
+  }
+
+  /**
+   * Generates a new DID Document and corresponding keys, by selecting a
+   * registered driver based on the DID method name.
+   *
+   * @param {object} options - Options hashmap.
+   * @param {string} options.method - DID method id (e.g. 'key', 'v1', 'web').
+   * @param {object} [options.args] - Options passed through to the DID driver.
+   *
+   * @returns {Promise<DidGenerationResult>}
+   */
+  async generate (
+    { method, ...args }: { method: string, [key: string]: unknown }
+  ): Promise<DidGenerationResult> {
+    const driver = this._methods.get(method)
+    if (!driver) {
+      throw new Error(`Driver for DID method "${method}" not found.`)
+    }
+    return driver.generate(args)
   }
 
   /**

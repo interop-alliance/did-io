@@ -1,23 +1,21 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es2022",
-    "lib": ["es2020"],
-    "module": "es6",
-    "moduleResolution": "node",
-    "declarationMap": true,
-    "declaration": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "outDir": "dist",
-    "noImplicitAny": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "baseUrl": ".",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "checkJs": true,
-    "allowJs": true
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": ["test", "node_modules", "dist", ".eslintrc.cjs"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

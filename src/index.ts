@@ -3,7 +3,11 @@
  */
 export * from './did-io.js'
 
-export { CachedResolver, DidGenerationResult, DidMethodDriver }
-  from './CachedResolver.js'
+export { CachedResolver } from './CachedResolver.js'
+export type {
+  DidGenerationResult,
+  DidMethodDriver,
+  CachedResolverOptions
+} from './CachedResolver.js'
 
 export { VERIFICATION_RELATIONSHIPS } from './constants.js'
