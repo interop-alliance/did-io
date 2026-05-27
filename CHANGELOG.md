@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 3.0.0 -
+## 3.0.0 - 2026-05-27
 
 ### Changed
 - **BREAKING**: `IKeyMap` is now `Map<string, KeyPair>` (was
