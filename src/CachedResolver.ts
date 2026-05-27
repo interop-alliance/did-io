@@ -10,23 +10,24 @@ import type {
   IKeyPair,
   IPublicKey
 } from '@digitalcredentials/ssi'
+import type { KeyPair } from '@digitalcredentials/keypair'
 
 export interface DidGenerationResult {
   didDocument: IDidDocument
   keyPairs: IKeyMap
-  methodFor: ({ purpose }: { purpose: string }) => IKeyPair
+  methodFor: ({ purpose }: { purpose: string }) => KeyPair
 }
 
 export interface DidMethodDriver {
   method: string
 
   computeId: (
-    { keyPair }: { keyPair: IKeyPair }
+    { keyPair }: { keyPair: KeyPair }
   ) => Promise<IDID>
 
   fromKeyPair: (
     { verificationKeyPair, keyAgreementKeyPair }:
-    { verificationKeyPair?: IKeyPair, keyAgreementKeyPair?: IKeyPair }
+    { verificationKeyPair?: KeyPair | IKeyPair, keyAgreementKeyPair?: KeyPair | IKeyPair }
   ) => DidGenerationResult
 
   generate: (
@@ -38,7 +39,7 @@ export interface DidMethodDriver {
   ) => Promise<IDidDocument | IPublicKey>
 
   publicKeyToDidDoc: (
-    { publicKeyDescription }: { publicKeyDescription: IKeyPair | IPublicKey }
+    { publicKeyDescription }: { publicKeyDescription: KeyPair | IKeyPair | IPublicKey }
   ) => Promise<IDidDocument>
 
   publicMethodFor: (
