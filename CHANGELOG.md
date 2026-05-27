@@ -3,7 +3,13 @@
 ## 2.0.0 -
 
 ### Changed
-- **BREAKING**: Convert to Typescript.
+- Forked from `@digitalbazaar/did-io@1.0.0`.
+- **BREAKING**: Convert to TypeScript.
+- **BREAKING**: Update to latest `lru-cache` package, deprecate `maxAge` option
+  (uses `ttl` instead).
+
+### Added
+- Import `generate()` and a pass-through `cache` param from `@digitalbazaar/did-io@2.0.0`.
 
 ## 1.0.1 - 2021-10-01
 
