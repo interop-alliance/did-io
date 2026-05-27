@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 2.0.0 - 2026-05-26
+## 2.0.0-2.0.1 - 2026-05-26
 
 ### Changed
 - Forked from `@digitalbazaar/did-io@1.0.0`.

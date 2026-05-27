@@ -1,6 +1,6 @@
 {
   "name": "@interop/did-io",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A library for managing DIDs (Decentralized Identifiers) and associated data.",
   "homepage": "https://github.com/interop-alliance/did-io",
   "type": "module",
@@ -61,8 +61,7 @@
     "Credential"
   ],
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "packageManager": "pnpm@11.3.0",
   "engines": {
