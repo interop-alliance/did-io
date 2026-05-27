@@ -5,17 +5,11 @@ import { VERIFICATION_RELATIONSHIPS } from './constants.js'
 import type {
   IDID,
   IDidDocument,
-  IKeyIdOrObject,
-  IKeyPair
+  IKeyIdOrObject
 } from '@digitalcredentials/ssi'
+import type { KeyPair } from '@digitalcredentials/keypair'
 
-export type IKeyMap = Record<string, IKeyPair>
-
-/**
- * Map of keys (or key type names) by verification relationship, used as input
- * when initializing a DID Document's keys.
- */
-export type IKeyMapInput = Record<string, IKeyPair | string>
+export type IKeyMap = Map<string, KeyPair>
 
 /**
  * Tests whether this DID Document contains a verification relationship
@@ -54,71 +48,6 @@ export function approvesMethodFor (
     return (typeof method === 'string' && method === methodId) ||
       (typeof method === 'object' && method.id === methodId)
   })
-}
-
-/**
- * Initializes the DID Document's keys/proof methods.
- *
- * @example
- * didDocument.id = 'did:ex:123';
- * const {keyPairs} = await initKeys({
- *   cryptoLd,
- *   keyMap: {
- *     capabilityInvocation: someExistingKey,
- *     authentication: 'Ed25519VerificationKey2020',
- *     assertionMethod: 'Ed25519VerificationKey2020',
- *     keyAgreement: 'X25519KeyAgreementKey2019'
- *   }
- * });.
- *
- * @param {object} options - Options hashmap.
- * @param {object} options.doc - DID Document.
- * @typedef {object} CryptoLD
- * @param {CryptoLD} [options.cryptoLd] - CryptoLD driver instance,
- *   initialized with the key types this DID Document intends to support.
- * @param {object} [options.keyMap] - Map of keys (or key types) by purpose.
- *
- * @returns {Promise<{keyPairs: object}>} A hashmap of public/private key
- *   pairs, by key id.
- */
-export async function initKeys (
-  { doc, cryptoLd, keyMap = {} }:
-  { doc: IDidDocument, cryptoLd?: any, keyMap?: IKeyMapInput }
-): Promise<{ keyPairs: IKeyMap }> {
-  if (!doc.id) {
-    throw new TypeError(
-      'DID Document "id" property is required to initialize keys.')
-  }
-
-  const keyPairs: IKeyMap = {}
-
-  // Set the defaults for the created keys (if needed)
-  const options = { controller: doc.id }
-
-  for (const purpose in keyMap) {
-    if (!VERIFICATION_RELATIONSHIPS.has(purpose)) {
-      throw new Error(`Unsupported key purpose: "${purpose}".`)
-    }
-
-    const entry = keyMap[purpose]
-    let key: IKeyPair
-    if (typeof entry === 'string') {
-      if (!cryptoLd) {
-        throw new Error('Please provide an initialized CryptoLD instance.')
-      }
-      key = await cryptoLd.generate({ type: entry, ...options })
-    } else {
-      // An existing key has been provided
-      key = entry as IKeyPair
-    }
-
-    if (!key.id) {
-      throw new Error('Initialized key is missing an "id" property.')
-    }
-    keyPairs[key.id] = key
-  }
-
-  return { keyPairs }
 }
 
 /**

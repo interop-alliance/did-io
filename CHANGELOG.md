@@ -1,5 +1,17 @@
 # @interop/did-io ChangeLog
 
+## 3.0.0 -
+
+### Changed
+- **BREAKING**: `IKeyMap` is now `Map<string, KeyPair>` (was
+  `Record<string, IKeyPair>`), holding live `KeyPair` instances from
+  `@digitalcredentials/keypair` instead of plain key descriptors. Aligns with
+  downstream method drivers (e.g. `@interop/did-method-key`).
+- **BREAKING**: `DidGenerationResult.methodFor` and `DidMethodDriver.computeId`
+  now use the live `KeyPair` type. `DidMethodDriver.fromKeyPair` and
+  `publicKeyToDidDoc` inputs widened to accept `KeyPair | IKeyPair`.
+- **BREAKING**: Remove `initKeys()` and the `IKeyMapInput` type.
+
 ## 2.0.0-2.0.1 - 2026-05-26
 
 ### Changed

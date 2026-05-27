@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@digitalcredentials/keypair':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@digitalcredentials/ssi':
         specifier: ^5.4.2
         version: 5.4.2
@@ -77,6 +80,10 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@digitalcredentials/keypair@3.0.0':
+    resolution: {integrity: sha512-kVap/M6LDxY0YuEkhzV9AUn03BjMbGZlq+OKS/1nmCH6r1tXQDKbKOwGH6uocsBQm3VIg5Qy7tcHkqaLy6jOUw==}
+    engines: {node: '>=18.0'}
 
   '@digitalcredentials/ssi@5.4.2':
     resolution: {integrity: sha512-/rNw47tbC8661tNzVBbKfmX6jaZT+NE7PhPkaFzHdMIzzY8knGotiPqp+8UjjWcQTkzXrqeu1AktRSAnEF+IFw==}
@@ -1012,6 +1019,10 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@digitalcredentials/keypair@3.0.0':
+    dependencies:
+      '@digitalcredentials/ssi': 5.4.2
 
   '@digitalcredentials/ssi@5.4.2': {}
 

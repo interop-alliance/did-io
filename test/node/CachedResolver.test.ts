@@ -17,7 +17,7 @@ function makeDriver (method = 'ex'): DidMethodDriver {
     fromKeyPair: vi.fn(),
     generate: vi.fn(async () => ({
       didDocument: MOCK_DID_DOCUMENT,
-      keyPairs: {},
+      keyPairs: new Map(),
       methodFor: vi.fn()
     })),
     get: vi.fn(async () => MOCK_DID_DOCUMENT),
