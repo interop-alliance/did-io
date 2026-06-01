@@ -3,13 +3,13 @@
  */
 import { VERIFICATION_RELATIONSHIPS } from './constants.js'
 import type {
+  AbstractKeyPair,
   IDID,
   IDidDocument,
-  IKeyIdOrObject
-} from '@digitalcredentials/ssi'
-import type { KeyPair } from '@digitalcredentials/keypair'
+  IVerificationMethodEntry
+} from '@interop/data-integrity-core'
 
-export type IKeyMap = Map<string, KeyPair>
+export type IKeyMap = Map<string, AbstractKeyPair>
 
 /**
  * Tests whether this DID Document contains a verification relationship
@@ -92,7 +92,7 @@ export function approvesMethodFor (
 export function findVerificationMethod (
   { doc, methodId, purpose }:
   { doc: IDidDocument, methodId?: string, purpose?: string }
-): IKeyIdOrObject | undefined {
+): IVerificationMethodEntry | undefined {
   if (!doc) {
     throw new TypeError('A DID Document is required.')
   }
@@ -125,16 +125,16 @@ export function findVerificationMethod (
  */
 export function _methodById (
   { doc, methodId }: { doc: IDidDocument, methodId: string }
-): IKeyIdOrObject | undefined {
+): IVerificationMethodEntry | undefined {
   let result
 
   // First, check the 'verificationMethod' bucket, see if it's listed there
-  let unlistedPurposeMethods: IKeyIdOrObject[] | undefined
+  let unlistedPurposeMethods: IVerificationMethodEntry[] | undefined
   if (doc.verificationMethod) {
     unlistedPurposeMethods = Array.isArray(doc.verificationMethod)
       ? doc.verificationMethod
       : [doc.verificationMethod]
-    result = unlistedPurposeMethods.find((method: IKeyIdOrObject) => {
+    result = unlistedPurposeMethods.find((method: IVerificationMethodEntry) => {
       return (typeof method === 'string' && method === methodId) ||
         (typeof method === 'object' && method.id === methodId)
     })
@@ -169,16 +169,16 @@ export function _methodById (
  * @param {string} [options.purpose] - Verification relationship (e.g.
  *   'authentication').
  *
- * @returns {IKeyIdOrObject[]} The methods for that purpose (empty if none).
+ * @returns {IVerificationMethodEntry[]} The methods for that purpose (empty if none).
  */
 function _methodsForPurpose (
   { doc, purpose }: { doc: IDidDocument, purpose?: string }
-): IKeyIdOrObject[] {
+): IVerificationMethodEntry[] {
   if (!purpose) {
     return []
   }
   const value = (doc as unknown as
-    Record<string, IKeyIdOrObject | IKeyIdOrObject[] | undefined>)[purpose]
+    Record<string, IVerificationMethodEntry | IVerificationMethodEntry[] | undefined>)[purpose]
   if (value == null) {
     return []
   }

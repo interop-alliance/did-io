@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
  */
 import { describe, it, beforeEach, expect, vi } from 'vitest'
-import type { IDidDocument } from '@digitalcredentials/ssi'
+import type { IDidDocument } from '@interop/data-integrity-core'
 
 import { CachedResolver } from '../../src/index.js'
 import type { DidMethodDriver } from '../../src/index.js'
