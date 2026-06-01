@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 4.0.0 - TBD
+## 4.0.0 - 2026-06-01
 
 ### Changed
 - **BREAKING**: Swap dependencies to `@interop/data-integrity-core`, dropping
