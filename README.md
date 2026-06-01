@@ -133,7 +133,7 @@ const {didDocument, keyPairs, methodFor} = await didMethodDriver.generate();
 didDocument
 // -> plain JS object, representing a DID document.
 keyPairs
-// -> a javascript Map of public/private LDKeyPair instances (from crypto-ld),
+// -> a javascript Map of public/private AbstractKeyPair instances,
 //   by key id
 methodFor({purpose: 'keyAgreement'});
 // for example, an X25519KeyAgreementKey2020 key pair instance, that can

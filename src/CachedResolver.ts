@@ -5,29 +5,29 @@ import { parseDid } from './did-io.js'
 import type { IKeyMap } from './did-io.js'
 import { LruCache } from '@interop/lru-memoize'
 import type {
+  AbstractKeyPair,
   IDID,
   IDidDocument,
   IKeyPair,
   IPublicKey
-} from '@digitalcredentials/ssi'
-import type { KeyPair } from '@digitalcredentials/keypair'
+} from '@interop/data-integrity-core'
 
 export interface DidGenerationResult {
   didDocument: IDidDocument
   keyPairs: IKeyMap
-  methodFor: ({ purpose }: { purpose: string }) => KeyPair
+  methodFor: ({ purpose }: { purpose: string }) => AbstractKeyPair
 }
 
 export interface DidMethodDriver {
   method: string
 
   computeId: (
-    { keyPair }: { keyPair: KeyPair }
+    { keyPair }: { keyPair: AbstractKeyPair }
   ) => Promise<IDID>
 
   fromKeyPair: (
     { verificationKeyPair, keyAgreementKeyPair }:
-    { verificationKeyPair?: KeyPair | IKeyPair, keyAgreementKeyPair?: KeyPair | IKeyPair }
+    { verificationKeyPair?: AbstractKeyPair | IKeyPair, keyAgreementKeyPair?: AbstractKeyPair | IKeyPair }
   ) => DidGenerationResult
 
   generate: (
@@ -39,7 +39,7 @@ export interface DidMethodDriver {
   ) => Promise<IDidDocument | IPublicKey>
 
   publicKeyToDidDoc: (
-    { publicKeyDescription }: { publicKeyDescription: KeyPair | IKeyPair | IPublicKey }
+    { publicKeyDescription }: { publicKeyDescription: AbstractKeyPair | IKeyPair | IPublicKey }
   ) => Promise<IDidDocument>
 
   publicMethodFor: (

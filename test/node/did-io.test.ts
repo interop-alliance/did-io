@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
  */
 import { describe, it, beforeEach, expect } from 'vitest'
-import type { IDidDocument } from '@digitalcredentials/ssi'
+import type { IDidDocument } from '@interop/data-integrity-core'
 
 import {
   findVerificationMethod,

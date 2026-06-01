@@ -1,5 +1,20 @@
 # @interop/did-io ChangeLog
 
+## 4.0.0 - TBD
+
+### Changed
+- **BREAKING**: Swap dependencies to `@interop/data-integrity-core`, dropping
+  `@digitalcredentials/ssi` and `@digitalcredentials/keypair` (both now folded
+  into `data-integrity-core`). Mirrors `@interop/ed25519-verification-key@7.0.0`.
+- **BREAKING**: `IKeyMap` is now `Map<string, AbstractKeyPair>` (was
+  `Map<string, KeyPair>`), holding live `AbstractKeyPair` instances from
+  `@interop/data-integrity-core`.
+- **BREAKING**: `DidGenerationResult.methodFor` and `DidMethodDriver.computeId`
+  now use the `AbstractKeyPair` type. `DidMethodDriver.fromKeyPair` and
+  `publicKeyToDidDoc` inputs accept `AbstractKeyPair | IKeyPair`.
+- **BREAKING**: `findVerificationMethod` (and internal helpers) now return
+  `IVerificationMethodEntry` (was `IKeyIdOrObject`).
+
 ## 3.0.0 - 2026-05-27
 
 ### Changed

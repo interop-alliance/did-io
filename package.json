@@ -37,8 +37,7 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@digitalcredentials/keypair": "^3.0.0",
-    "@digitalcredentials/ssi": "^5.4.2",
+    "@interop/data-integrity-core": "^6.0.2",
     "@interop/lru-memoize": "^4.0.2"
   },
   "devDependencies": {
