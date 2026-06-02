@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 4.0.1 - TBD
+## 4.0.1 - 2026-06-01
 
 ### Fixed
 - Align the `DidMethodDriver` interface with the actual driver implementations
