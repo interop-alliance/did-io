@@ -21,14 +21,10 @@ export interface DidGenerationResult {
 export interface DidMethodDriver {
   method: string
 
-  computeId: (
-    { keyPair }: { keyPair: AbstractKeyPair }
-  ) => Promise<IDID>
-
   fromKeyPair: (
     { verificationKeyPair, keyAgreementKeyPair }:
     { verificationKeyPair?: AbstractKeyPair | IKeyPair, keyAgreementKeyPair?: AbstractKeyPair | IKeyPair }
-  ) => DidGenerationResult
+  ) => Promise<DidGenerationResult>
 
   generate: (
     options?: { [key: string]: unknown }
@@ -40,7 +36,7 @@ export interface DidMethodDriver {
 
   publicKeyToDidDoc: (
     { publicKeyDescription }: { publicKeyDescription: AbstractKeyPair | IKeyPair | IPublicKey }
-  ) => Promise<IDidDocument>
+  ) => Promise<{ didDocument: IDidDocument }>
 
   publicMethodFor: (
     { didDocument, purpose }: { didDocument: IDidDocument, purpose: string }

@@ -13,7 +13,6 @@ const MOCK_DID_DOCUMENT = { id: MOCK_DID } as unknown as IDidDocument
 function makeDriver (method = 'ex'): DidMethodDriver {
   return {
     method,
-    computeId: vi.fn(),
     fromKeyPair: vi.fn(),
     generate: vi.fn(async () => ({
       didDocument: MOCK_DID_DOCUMENT,
