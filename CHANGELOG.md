@@ -1,5 +1,20 @@
 # @interop/did-io ChangeLog
 
+## 4.0.1 - TBD
+
+### Fixed
+- Align the `DidMethodDriver` interface with the actual driver implementations
+  (`@interop/did-method-key`, `@interop/did-web-resolver`), so drivers can now
+  declare `implements DidMethodDriver`:
+  - `fromKeyPair` is now `async` (returns `Promise<DidGenerationResult>` instead
+    of a synchronous `DidGenerationResult`).
+  - `publicKeyToDidDoc` now returns `Promise<{ didDocument: IDidDocument }>`
+    instead of `Promise<IDidDocument>`, matching what the drivers return.
+  - Removed `computeId` from the interface. It was never called by
+    `CachedResolver` (or any other consumer), so it should not have been a
+    required member of `DidMethodDriver`. Driver implementations may still
+    expose it as their own method.
+
 ## 4.0.0 - 2026-06-01
 
 ### Changed
