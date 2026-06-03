@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 4.0.2 -
+## 4.0.2 - 2026-06-03
 
 ### Fixed
 - Add default export to `package.json`.
