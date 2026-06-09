@@ -7,13 +7,13 @@ import { LruCache } from '@interop/lru-memoize'
 import type {
   AbstractKeyPair,
   IDID,
-  IDidDocument,
+  IDIDDocument,
   IKeyPair,
   IPublicKey
 } from '@interop/data-integrity-core'
 
 export interface DidGenerationResult {
-  didDocument: IDidDocument
+  didDocument: IDIDDocument
   keyPairs: IKeyMap
   methodFor: ({ purpose }: { purpose: string }) => AbstractKeyPair
 }
@@ -32,14 +32,14 @@ export interface DidMethodDriver {
 
   get: (
     options: { did?: IDID | string, url?: string, [key: string]: unknown }
-  ) => Promise<IDidDocument | IPublicKey>
+  ) => Promise<IDIDDocument | IPublicKey>
 
   publicKeyToDidDoc: (
     { publicKeyDescription }: { publicKeyDescription: AbstractKeyPair | IKeyPair | IPublicKey }
-  ) => Promise<{ didDocument: IDidDocument }>
+  ) => Promise<{ didDocument: IDIDDocument }>
 
   publicMethodFor: (
-    { didDocument, purpose }: { didDocument: IDidDocument, purpose: string }
+    { didDocument, purpose }: { didDocument: IDIDDocument, purpose: string }
   ) => IPublicKey
 }
 
@@ -95,13 +95,13 @@ export class CachedResolver {
    * @param {object} [options.getOptions] - Options passed through to the
    *   driver's get() operation.
    *
-   * @returns {Promise<IDidDocument|IPublicKey>} Resolves with fetched DID
+   * @returns {Promise<IDIDDocument|IPublicKey>} Resolves with fetched DID
    *   Document or public key node.
    */
   async get (
     { did, url, ...getOptions }:
     { did?: IDID | string, url?: string, [key: string]: unknown }
-  ): Promise<IDidDocument | IPublicKey> {
+  ): Promise<IDIDDocument | IPublicKey> {
     const didOrUrl = did ?? url
     if (!didOrUrl) {
       throw new TypeError('A string "did" or "url" parameter is required.')
@@ -109,7 +109,7 @@ export class CachedResolver {
 
     const method = this._methodForDid(didOrUrl)
 
-    return this._cache.memoize<IDidDocument | IPublicKey>({
+    return this._cache.memoize<IDIDDocument | IPublicKey>({
       key: didOrUrl,
       fn: async () => await method.get({ did: didOrUrl, ...getOptions })
     })

@@ -38,7 +38,7 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@interop/data-integrity-core": "^6.1.2",
+    "@interop/data-integrity-core": "^6.4.0",
     "@interop/lru-memoize": "^4.0.3"
   },
   "devDependencies": {

@@ -5,7 +5,7 @@ import { VERIFICATION_RELATIONSHIPS } from './constants.js'
 import type {
   AbstractKeyPair,
   IDID,
-  IDidDocument,
+  IDIDDocument,
   IVerificationMethodEntry
 } from '@interop/data-integrity-core'
 
@@ -34,7 +34,7 @@ export type IKeyMap = Map<string, AbstractKeyPair>
  * @returns {boolean} Returns whether a method id is authorized for purpose.
  */
 export function approvesMethodFor (
-  { doc, methodId, purpose }: { doc: IDidDocument, methodId: string, purpose: string }): boolean {
+  { doc, methodId, purpose }: { doc: IDIDDocument, methodId: string, purpose: string }): boolean {
   if (!(methodId && purpose)) {
     throw new Error('A method id and purpose is required.')
   }
@@ -91,7 +91,7 @@ export function approvesMethodFor (
  */
 export function findVerificationMethod (
   { doc, methodId, purpose }:
-  { doc: IDidDocument, methodId?: string, purpose?: string }
+  { doc: IDIDDocument, methodId?: string, purpose?: string }
 ): IVerificationMethodEntry | undefined {
   if (!doc) {
     throw new TypeError('A DID Document is required.')
@@ -124,7 +124,7 @@ export function findVerificationMethod (
  * @returns {object} Returns the verification method.
  */
 export function _methodById (
-  { doc, methodId }: { doc: IDidDocument, methodId: string }
+  { doc, methodId }: { doc: IDIDDocument, methodId: string }
 ): IVerificationMethodEntry | undefined {
   let result
 
@@ -172,7 +172,7 @@ export function _methodById (
  * @returns {IVerificationMethodEntry[]} The methods for that purpose (empty if none).
  */
 function _methodsForPurpose (
-  { doc, purpose }: { doc: IDidDocument, purpose?: string }
+  { doc, purpose }: { doc: IDIDDocument, purpose?: string }
 ): IVerificationMethodEntry[] {
   if (!purpose) {
     return []

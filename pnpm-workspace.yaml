@@ -1,3 +1,2 @@
 minimumReleaseAgeExclude:
-  - '@interop/data-integrity-core@6.1.2'
-  - '@interop/lru-memoize@4.0.3'
+  - '@interop/data-integrity-core@6.4.0'
