@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 4.0.4 -
+## 4.0.4 - 2026-06-09
 
 ### Changed
 
