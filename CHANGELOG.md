@@ -1,5 +1,11 @@
 # @interop/did-io ChangeLog
 
+## 4.0.4 -
+
+### Changed
+
+- Update to `@interop/data-integrity-core@7.0.0`.
+
 ## 4.0.3 - 2026-06-08
 
 ### Changed
