@@ -130,7 +130,9 @@ export class CachedResolver {
   ): Promise<DidGenerationResult> {
     const driver = this._methods.get(method)
     if (!driver) {
-      throw new Error(`Driver for DID method "${method}" not found.`)
+      const err = new Error(`Driver for DID method "${method}" not found.`)
+      err.name = 'NotSupportedError'
+      throw err
     }
     return driver.generate(args)
   }
@@ -145,7 +147,9 @@ export class CachedResolver {
     const { prefix } = parseDid({ did })
     const method = this._methods.get(prefix)
     if (!method) {
-      throw new Error(`Driver for DID ${did} not found.`)
+      const err = new Error(`Driver for DID ${did} not found.`)
+      err.name = 'NotSupportedError'
+      throw err
     }
     return method
   }
