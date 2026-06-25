@@ -98,6 +98,8 @@ describe('CachedResolver', () => {
     it('should throw if no driver is registered for the method', async () => {
       await expect(resolver.get({ did: 'did:nope:1234' }))
         .rejects.toThrow(/not found/)
+      await expect(resolver.get({ did: 'did:nope:1234' }))
+        .rejects.toMatchObject({ name: 'NotSupportedError' })
     })
   })
 
@@ -116,6 +118,8 @@ describe('CachedResolver', () => {
       const resolver = new CachedResolver()
       await expect(resolver.generate({ method: 'nope' }))
         .rejects.toThrow(/not found/)
+      await expect(resolver.generate({ method: 'nope' }))
+        .rejects.toMatchObject({ name: 'NotSupportedError' })
     })
   })
 })

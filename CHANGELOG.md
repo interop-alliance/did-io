@@ -1,5 +1,13 @@
 # @interop/did-io ChangeLog
 
+## 4.0.6 - TBD
+
+### Changed
+- Set `err.name` to `'NotSupportedError'` on the errors thrown by
+  `CachedResolver.generate()` and `_methodForDid()` when no driver is registered
+  for a DID method, so callers can branch on `err.name` instead of string-matching
+  the message.
+
 ## 4.0.5 - 2026-06-13
 
 ### Changed
