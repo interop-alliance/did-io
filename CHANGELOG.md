@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 4.0.6 - TBD
+## 4.0.6 - 2026-06-25
 
 ### Changed
 - Set `err.name` to `'NotSupportedError'` on the errors thrown by

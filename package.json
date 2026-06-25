@@ -1,6 +1,6 @@
 {
   "name": "@interop/did-io",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "A library for managing DIDs (Decentralized Identifiers) and associated data.",
   "homepage": "https://github.com/interop-alliance/did-io",
   "type": "module",
@@ -38,7 +38,7 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@interop/data-integrity-core": "^8.0.0",
+    "@interop/data-integrity-core": "^8.1.0",
     "@interop/lru-memoize": "^4.0.3"
   },
   "devDependencies": {
