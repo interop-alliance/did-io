@@ -1,6 +1,6 @@
 # @interop/did-io ChangeLog
 
-## 4.1.0 - TBD
+## 4.1.0 - 2026-07-17
 
 ### Added
 - Add `CachedResolver.resolveDID()`: spec-shaped DID resolution returning a
