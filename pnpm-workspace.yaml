@@ -1,1 +1,2 @@
 minimumReleaseAgeExclude:
+  - '@interop/data-integrity-core@8.3.0'

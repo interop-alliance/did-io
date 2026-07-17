@@ -4,10 +4,13 @@
 import { parseDid } from './did-io.js'
 import type { IKeyMap } from './did-io.js'
 import { LruCache } from '@interop/lru-memoize'
+import { DIDResolutionError } from '@interop/data-integrity-core'
 import type {
   AbstractKeyPair,
   IDID,
   IDIDDocument,
+  IDIDResolutionOptions,
+  IDIDResolutionResult,
   IKeyPair,
   IPublicKey
 } from '@interop/data-integrity-core'
@@ -33,6 +36,16 @@ export interface DidMethodDriver {
   get: (
     options: { did?: IDID | string, url?: string, [key: string]: unknown }
   ) => Promise<IDIDDocument | IPublicKey>
+
+  /**
+   * Optional spec-shaped resolution: returns a DID Resolution Result envelope
+   * (`didDocument` + `didResolutionMetadata` + `didDocumentMetadata`) instead
+   * of throwing on resolution failure. Drivers that do not implement it are
+   * adapted from `get()` by `CachedResolver.resolveDID()`.
+   */
+  resolveDID?: (
+    options: { did: IDID | string } & IDIDResolutionOptions
+  ) => Promise<IDIDResolutionResult>
 
   publicKeyToDidDoc: (
     { publicKeyDescription }: { publicKeyDescription: AbstractKeyPair | IKeyPair | IPublicKey }
@@ -113,6 +126,79 @@ export class CachedResolver {
       key: didOrUrl,
       fn: async () => await method.get({ did: didOrUrl, ...getOptions })
     })
+  }
+
+  /**
+   * Resolves a DID to a DID Resolution Result envelope, per the DID
+   * Resolution spec: resolution failures are reported on
+   * `didResolutionMetadata.error` (with RFC 9457 `problemDetails` where
+   * available) rather than thrown. Only a missing `did` argument (a
+   * programmer error, not a resolution failure) throws.
+   *
+   * Delegates to the driver's own `resolveDID()` when implemented (memoized
+   * under a `resolveDID:` cache key -- note this caches error envelopes for
+   * the cache ttl, unlike `get()`, whose rejections are not cached).
+   * Otherwise adapts the driver's throw-based `get()`: a thrown
+   * `DIDResolutionError` maps to its `code`/`problemDetails`, and any other
+   * error is classified `internalError`.
+   *
+   * @param {object} options - Options hashmap.
+   * @param {string} options.did - DID uri (bare DID, no fragment).
+   *   Remaining properties are DID resolution options passed to the driver.
+   *
+   * @returns {Promise<IDIDResolutionResult>} Resolves with the resolution
+   *   result envelope; on failure, `didDocument` is `null` and the reason is
+   *   in `didResolutionMetadata`.
+   */
+  async resolveDID (
+    { did, ...options }: { did: IDID | string } & IDIDResolutionOptions
+  ): Promise<IDIDResolutionResult> {
+    if (!did) {
+      throw new TypeError('A string "did" parameter is required.')
+    }
+    let driver: DidMethodDriver
+    try {
+      driver = this._methodForDid(did)
+    } catch (cause) {
+      return new DIDResolutionError(`Driver for DID ${did} not found.`, {
+        code: 'methodNotSupported',
+        problemDetails: {
+          type: 'https://www.w3.org/ns/did#METHOD_NOT_SUPPORTED',
+          title: 'The DID method is not supported.',
+          detail: `Driver for DID ${did} not found.`
+        },
+        cause
+      }).toResolutionResult()
+    }
+    const { resolveDID } = driver
+    if (resolveDID) {
+      return this._cache.memoize<IDIDResolutionResult>({
+        key: `resolveDID:${did}`,
+        fn: async () => await resolveDID.call(driver, { did, ...options })
+      })
+    }
+    try {
+      const didDocument = await this.get({ did, ...options }) as IDIDDocument
+      return {
+        didResolutionMetadata: {},
+        didDocument,
+        didDocumentMetadata: {}
+      }
+    } catch (cause) {
+      if (cause instanceof DIDResolutionError) {
+        return cause.toResolutionResult()
+      }
+      const detail = cause instanceof Error ? cause.message : String(cause)
+      return new DIDResolutionError(detail, {
+        code: 'internalError',
+        problemDetails: {
+          type: 'https://www.w3.org/ns/did#INTERNAL_ERROR',
+          title: 'An internal error occurred during resolution.',
+          detail
+        },
+        cause
+      }).toResolutionResult()
+    }
   }
 
   /**
