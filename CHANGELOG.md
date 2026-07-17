@@ -1,5 +1,26 @@
 # @interop/did-io ChangeLog
 
+## 4.1.0 - TBD
+
+### Added
+- Add `CachedResolver.resolveDID()`: spec-shaped DID resolution returning a
+  DID Resolution Result envelope (`didDocument` + `didResolutionMetadata` +
+  `didDocumentMetadata`, i.e. `IDIDResolutionResult`) instead of throwing on
+  resolution failure. Failures are reported on `didResolutionMetadata.error`
+  with RFC 9457 `problemDetails` where available; an unregistered DID method
+  yields `methodNotSupported` rather than a throw. Delegates to the driver's
+  own optional `resolveDID()` when implemented; otherwise adapts the driver's
+  throw-based `get()` (a thrown `DIDResolutionError` maps to its
+  `code`/`problemDetails`; other errors classify as `internalError`).
+  `CachedResolver.get()` is unchanged and remains throw-based.
+- Add optional `resolveDID?()` to the `DidMethodDriver` interface for drivers
+  that natively produce resolution-result envelopes.
+
+### Changed
+- Update to `@interop/data-integrity-core@8.3.0` (source of the
+  `IDIDResolutionResult`/`IDIDResolutionOptions` types and the
+  `DIDResolutionError` class).
+
 ## 4.0.6 - 2026-06-25
 
 ### Changed
